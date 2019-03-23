@@ -1,0 +1,11 @@
+name: f10
+dependencies:
+  - python=3.7
+  - dash
+  - matplotlib
+  - pandas
+  - scikit-learn
+  - pylint
+  - xlrd
+  - pip:
+    - dash_bootstrap_components
