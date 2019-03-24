@@ -2,7 +2,7 @@
 """
 Created on Sun Jun 10 02:02:08 2018
 
-@author: Dan
+@author: Filippo Broggini
 """
 import datetime
 import io
@@ -11,24 +11,14 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_table
 import pandas as pd
 import plotly.graph_objs as go
 import numpy as np
-from sklearn.cluster import *
-import math
-from scipy.stats import norm
 from dash.dependencies import Input, Output
 
 from geopy.geocoders import Nominatim
 geolocator = Nominatim(user_agent="my-application")
-
-from textwrap import dedent
-
-df = pd.read_csv('../Hackathon_Copenhagen_2018/ClusteringWebApp/data/Xu_et_al_2016_dataset.xlsx')
-df = df.rename(columns=lambda x: x.strip())
-lats=list(df.iloc[0].values)
-longs=list(df.iloc[1].values)
-sample_names=list(df)   
 
 # ============== back end python ===================
 
@@ -66,6 +56,21 @@ def geolocate(city=None, country=None):
 
 # ============== back end python ===================
 
+grade_dict = {
+    'A+': 12,
+    'A': 11,
+    'A-': 10,
+    'B+': 9,
+    'B': 8,
+    'B-': 7,
+    'C+': 6,
+    'C': 5,
+    'C-': 4,
+    'D+': 3,
+    'D': 2,
+    'D-': 1,
+}
+
 ex_in = [
     "Tobacco",
     "Alcohol",
@@ -82,19 +87,25 @@ ex_in = [
     "Education"
 ]
 
-pd_countries = pd.read_csv('data/Countries.csv')
+df_countries = pd.read_csv('data/Countries.csv')
+
+df_ratings = pd.read_csv('data/Ratings_latlon_v1.csv')
+
+df_funds = pd.read_csv('data/Funds_v1.csv')
+
+df_funds_small = pd.read_csv('data/Funds_small_v1.csv')
 
 data = go.Scattermapbox(
-    lat = pd_countries['Lat'],
-    lon = pd_countries['Lon'],
+    lat = df_ratings['Lat'],
+    lon = df_ratings['Lon'],
     name = 'Company',
-    marker = dict(size = 15, opacity = 0.5)
+    marker = dict(size = 15, opacity = 0.5, color = 'green')
 )
 
 mapbox_access_token='pk.eyJ1IjoiZmlsaXBwbzgyIiwiYSI6ImNqdGx1cHc0bTBodXM0NHBoMWI4aW5zdHQifQ.88J4ReUaoz8Zu0AxsQjS_w'
 
 layout = dict(
-    height = 800,
+    height = 600,
     # top, bottom, left and right margins
     margin = dict(t = 0, b = 0, l = 0, r = 0),
     #font = dict(color = '#FFFFFF', size = 11),
@@ -105,7 +116,7 @@ layout = dict(
         #bearing = 0,
         # where we want the map to be centered
         center = dict(
-            lat= 46.7985624,
+            lat= 36.7985624,
 			lon= 8.2319736
         ),
         # we want the map to be "parallel" to our screen, with no angle
@@ -118,40 +129,6 @@ layout = dict(
 )
 
 # ============== back end python ===================
-
-scl = [0,"rgb(150,0,90)"],[0.125,"rgb(0, 0, 200)"],[0.25,"rgb(0, 25, 255)"],\
-[0.375,"rgb(0, 152, 255)"],[0.5,"rgb(44, 255, 150)"],[0.625,"rgb(151, 255, 0)"],\
-[0.75,"rgb(255, 234, 0)"],[0.875,"rgb(255, 111, 0)"],[1,"rgb(255, 0, 0)"]
-
-COLORSCALE = [ [0, "B61F45"], [0.15, "rgb(249,210,41)"], [0.3, "rgb(134,191,118)"],
-                [0.45, "rgb(37,180,167)"], [0.6, "rgb(17,123,215)"], [0.85, "716E6B"],[1, "rgb(54,50,153)"] ]
-"""
-test_df = KDE_df[KDE_df.columns[0]]
-traces=[]
-traces.append(go.Scatter(
-        x=range(len(test_df)),
-        y=test_df,
-        marker={
-            'size': 0,
-            'line': {'width': 0.5, 'color': 'black'}
-        },
-        ))
-"""
-#=======================
-
-# external_stylesheets = ['']
-# external_stylesheets = ['https://github.com/plotly/dash-app-stylesheets/blob/master/dash-analytics-report.css']
-# external_stylesheets = ['https://cdn.rawgit.com/plotly/dash-app-stylesheets/2d266c578d2a6e8850ebce48fdb52759b2aef506/stylesheet-oil-and-gas.css']
-# xternal_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-# external_stylesheets = ['https://stackpath.bootstrapcdn.com/bootswatch/4.3.1/flatly/bootstrap.min.css']
-
-
-# Boostrap CSS.
-# app.css.append_css({'external_url': 'https://cdn.rawgit.com/plotly/dash-app-stylesheets/2d266c578d2a6e8850ebce48fdb52759b2aef506/stylesheet-oil-and-gas.css'})
-
-html_center = 'left'
-# html_border = 'solid'
-html_border = 'none'
 
 navbar = dbc.NavbarSimple(
     children=[
@@ -168,7 +145,7 @@ navbar = dbc.NavbarSimple(
             ],
         ),
     ],
-    brand="Sustainability Ratings",
+    brand="Fit for Future Funds",
     brand_href="#",
     sticky="top",
 )
@@ -177,13 +154,26 @@ body = dbc.Container(
     [
         dbc.Row(
             [
-                html.P("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.")
+                html.H1("Fit for Future Funds")
             ],
             justify="center",
             no_gutters=True
         ),
         dbc.Row(
             [
+                dbc.Alert(html.H3("Transparent fund selection based on accurate sustainability ratings"), color="success"),
+            ],
+            justify="center",
+            no_gutters=True
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+
+                    ],
+                    md=1,
+                ),
                 dbc.Col(
                     [
                         dbc.FormGroup(
@@ -202,12 +192,11 @@ body = dbc.Container(
                                         {"label": "Telecommunication Services", "value": 8},
                                         {"label": "Utlities", "value": 9},
                                     ],
-                                    values=[],
+                                    values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
                                     id="checklist-sectors",
                                 ),
                             ]
                         ),
-                        dbc.Button("View details", color="secondary"),
                     ],
                     md=4,
                 ),
@@ -231,7 +220,6 @@ body = dbc.Container(
                                 ),
                             ]
                         ),
-                        dbc.Button("View details", color="secondary"),
                     ],
                     md=4,
                 ),
@@ -254,17 +242,9 @@ body = dbc.Container(
                                 ),
                             ]
                         ),
-                        dbc.Button("View details", color="secondary"),
                     ],
-                    md=4,
+                    md=3,
                 ),
-            ],
-            justify="center",
-            no_gutters=True
-        ),
-        dbc.Row(
-            [
-                html.Div(id='my-div')
             ],
             justify="center",
             no_gutters=True
@@ -274,6 +254,18 @@ body = dbc.Container(
                 dbc.Col(
                     [
                         html.H2("Regions"), 
+                    ],
+                    md=12,
+                    className=["text-center "],
+                ),
+            ],
+            justify="center",
+            no_gutters=True
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
                         dcc.Graph(
                             id='graph-with-slider',
                             figure=go.Figure(
@@ -290,16 +282,147 @@ body = dbc.Container(
         ),
         dbc.Row(
             [
+              html.Hr()  
+            ],
+        ),
+        dbc.Row(
+            [
                 dbc.Col(
                     [
-                        html.H2("Show results"), 
-                        dbc.Button("View details", color="secondary"),
+                        dbc.Button("Show results", color="secondary", id='show_results'),
                     ],
-                    md=12,
+                    md=4,
+                    className=["text-center"]
                 ),
             ],
             justify="center",
             no_gutters=True
+        ),
+        dbc.Row(
+            [
+              html.Hr()  
+            ],
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        dash_table.DataTable(
+                            id='table',
+                            columns=[{"name": i, "id": i} for i in df_funds_small.columns],
+                            data=[],
+                            style_cell={'textAlign': 'left'},
+                            style_as_list_view=True,
+                            style_data_conditional=[
+                                {
+                                    'if': {
+                                        'column_id': 'Rating',
+                                        'filter': 'Rating eq "A+"'
+                                    },
+                                    'backgroundColor': 'DarkGreen',
+                                    'color': 'white',
+                                },
+                                {
+                                    'if': {
+                                        'column_id': 'Rating',
+                                        'filter': 'Rating eq "A"'
+                                    },
+                                    'backgroundColor': 'DarkGreen',
+                                    'color': 'white',
+                                },
+                                {
+                                    'if': {
+                                        'column_id': 'Rating',
+                                        'filter': 'Rating eq "A-"'
+                                    },
+                                    'backgroundColor': 'DarkGreen',
+                                    'color': 'white',
+                                },
+                                {
+                                    'if': {
+                                        'column_id': 'Rating',
+                                        'filter': 'Rating eq "B+"'
+                                    },
+                                    'backgroundColor': 'LimeGreen',
+                                    'color': 'white',
+                                },
+                                {
+                                    'if': {
+                                        'column_id': 'Rating',
+                                        'filter': 'Rating eq "B"'
+                                    },
+                                    'backgroundColor': 'LimeGreen',
+                                    'color': 'white',
+                                },
+                                {
+                                    'if': {
+                                        'column_id': 'Rating',
+                                        'filter': 'Rating eq "B-"'
+                                    },
+                                    'backgroundColor': 'LimeGreen',
+                                    'color': 'white',
+                                },
+                                {
+                                    'if': {
+                                        'column_id': 'Rating',
+                                        'filter': 'Rating eq "C+"'
+                                    },
+                                    'backgroundColor': 'Red',
+                                    'color': 'white',
+                                },
+                                {
+                                    'if': {
+                                        'column_id': 'Rating',
+                                        'filter': 'Rating eq "C"'
+                                    },
+                                    'backgroundColor': 'Red',
+                                    'color': 'white',
+                                },
+                                {
+                                    'if': {
+                                        'column_id': 'Rating',
+                                        'filter': 'Rating eq "C-"'
+                                    },
+                                    'backgroundColor': 'Red',
+                                    'color': 'white',
+                                },
+                                {
+                                    'if': {
+                                        'column_id': 'Rating',
+                                        'filter': 'Rating eq "D+"'
+                                    },
+                                    'backgroundColor': 'DarkRed',
+                                    'color': 'white',
+                                },
+                                {
+                                    'if': {
+                                        'column_id': 'Rating',
+                                        'filter': 'Rating eq "D"'
+                                    },
+                                    'backgroundColor': 'DarkRed',
+                                    'color': 'white',
+                                },
+                                {
+                                    'if': {
+                                        'column_id': 'Rating',
+                                        'filter': 'Rating eq "D-"'
+                                    },
+                                    'backgroundColor': 'DarkRed',
+                                    'color': 'white',
+                                },
+                            ]
+                        )
+                    ],
+                    md=8,
+                ),
+            ],
+            justify="center",
+            no_gutters=True
+        ),
+        dbc.Row(
+            [
+              html.Hr()  
+            ],
         ),
     ],
     className="mt-4",
@@ -307,7 +430,7 @@ body = dbc.Container(
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-app.layout = html.Div(children=[navbar, body])
+app.layout = html.Div(children=[body])
 
 # ---------------
 # End of html
@@ -319,13 +442,24 @@ app.layout = html.Div(children=[navbar, body])
 # Callbacks
 # ---------------------------------
 
-@app.callback(
-    Output(component_id='my-div', component_property='children'),
-    [Input(component_id='checklist-sectors', component_property='values')]
-)
-def update_output_div(input_value):
-    return 'You\'ve entered "{}"'.format(input_value)
+# @app.callback(
+#     Output(component_id='my-div', component_property='children'),
+#     [Input(component_id='checklist-sectors', component_property='values')]
+# )
+# def update_output_div(input_value):
+#     return 'You\'ve entered "{}"'.format(input_value)
 
+@app.callback(
+    Output(component_id='table', component_property='data'),
+    [Input(component_id='show_results', component_property='n_clicks')]
+)
+def on_button_click(n):
+    if n is None:
+        return []
+    else:
+        return df_funds_small.to_dict("rows")
+
+# df_funds_small.to_dict("rows")
 
 # ---------------------------------
 # Callbacks
@@ -334,8 +468,3 @@ def update_output_div(input_value):
 if __name__ == '__main__':
     app.run_server(debug=True)
 
-#TODO
-    # refind missing numbers on slider
-    # deploy as web app
-    # polish
-    # add axis
