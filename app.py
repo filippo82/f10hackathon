@@ -25,10 +25,10 @@ geolocator = Nominatim(user_agent="my-application")
 # Create Geolocation Function =================================================
 def geolocate(city=None, country=None):
     '''
-    Inputs city and country, or just country. Returns the lat/long coordinates of 
+    Inputs city and country, or just country. Returns the lat/long coordinates of
     either the city if possible, if not, then returns lat/long of the center of the country.
     '''
-    
+
     # If the city exists,
     if city != None:
         # Try
@@ -47,7 +47,7 @@ def geolocate(city=None, country=None):
         try:
             # Geolocate the center of the country
             loc = geolocator.geocode(country)
-            # And return latitude and longitude 
+            # And return latitude and longitude
             return (loc.latitude, loc.longitude)
         # Otherwise
         except:
@@ -87,11 +87,11 @@ ex_in = [
     "Education"
 ]
 
-df_countries = pd.read_csv('data/Countries.csv')
+#df_countries = pd.read_csv('data/Countries.csv')
 
 df_ratings = pd.read_csv('data/Ratings_latlon_v1.csv')
 
-df_funds = pd.read_csv('data/Funds_v1.csv')
+#df_funds = pd.read_csv('data/Funds_v1.csv')
 
 df_funds_small = pd.read_csv('data/Funds_small_v1.csv')
 
@@ -253,7 +253,7 @@ body = dbc.Container(
             [
                 dbc.Col(
                     [
-                        html.H2("Regions"), 
+                        html.H2("Regions"),
                     ],
                     md=12,
                     className=["text-center "],
@@ -270,7 +270,7 @@ body = dbc.Container(
                             id='graph-with-slider',
                             figure=go.Figure(
                                 data=[data,],
-                                layout=layout 
+                                layout=layout
                             )
                         )
                     ],
@@ -282,7 +282,7 @@ body = dbc.Container(
         ),
         dbc.Row(
             [
-              html.Hr()  
+              html.Hr()
             ],
         ),
         dbc.Row(
@@ -300,7 +300,7 @@ body = dbc.Container(
         ),
         dbc.Row(
             [
-              html.Hr()  
+              html.Hr()
             ],
         ),
         dbc.Row(
@@ -421,7 +421,7 @@ body = dbc.Container(
         ),
         dbc.Row(
             [
-              html.Hr()  
+              html.Hr()
             ],
         ),
     ],
