@@ -1,6 +1,7 @@
 name: f10
 dependencies:
   - python=3.7
+  - pip
   - dash
   - matplotlib
   - pandas

@@ -20,12 +20,11 @@ from dash.dependencies import Input, Output
 from geopy.geocoders import Nominatim
 geolocator = Nominatim(user_agent="my-application")
 
-# ============== back end python ===================
-
-# Create Geolocation Function =================================================
+#############################
+# Create Geolocation Function
+#############################
 def geolocate(city=None, country=None):
-    '''
-    Inputs city and country, or just country. Returns the lat/long coordinates of
+    r'''Inputs city and country, or just country. Returns the lat/long coordinates of
     either the city if possible, if not, then returns lat/long of the center of the country.
     '''
 
@@ -54,8 +53,9 @@ def geolocate(city=None, country=None):
             # Return missing value
             return np.nan
 
-# ============== back end python ===================
-
+###########################
+# Create a few dictionaries
+###########################
 grade_dict = {
     'A+': 12,
     'A': 11,
@@ -87,14 +87,17 @@ ex_in = [
     "Education"
 ]
 
+###########
+# Data sets
+###########
 #df_countries = pd.read_csv('data/Countries.csv')
-
 df_ratings = pd.read_csv('data/Ratings_latlon_v1.csv')
-
 #df_funds = pd.read_csv('data/Funds_v1.csv')
-
 df_funds_small = pd.read_csv('data/Funds_small_v1.csv')
 
+######################
+# Set up scattermapbox
+######################
 data = go.Scattermapbox(
     lat = df_ratings['Lat'],
     lon = df_ratings['Lon'],
@@ -128,7 +131,9 @@ layout = dict(
     )
 )
 
-# ============== back end python ===================
+###################
+# Beginning of html
+###################
 
 navbar = dbc.NavbarSimple(
     children=[
@@ -192,7 +197,7 @@ body = dbc.Container(
                                         {"label": "Telecommunication Services", "value": 8},
                                         {"label": "Utlities", "value": 9},
                                     ],
-                                    values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                                    value=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
                                     id="checklist-sectors",
                                 ),
                             ]
@@ -215,7 +220,7 @@ body = dbc.Container(
                                         {"label": "Defense", "value": 5},
                                         {"label": "Nuclear", "value": 6},
                                     ],
-                                    values=[],
+                                    value=[],
                                     id="checklist-exclusions",
                                 ),
                             ]
@@ -237,7 +242,7 @@ body = dbc.Container(
                                         {"label": "Circular Economy", "value": 4},
                                         {"label": "Education", "value": 5},
                                     ],
-                                    values=[],
+                                    value=[],
                                     id="checklist-inclusions",
                                 ),
                             ]
@@ -317,7 +322,7 @@ body = dbc.Container(
                                 {
                                     'if': {
                                         'column_id': 'Rating',
-                                        'filter': 'Rating eq "A+"'
+                                        'filter_query': '{Rating} eq "A+"'
                                     },
                                     'backgroundColor': 'DarkGreen',
                                     'color': 'white',
@@ -325,7 +330,7 @@ body = dbc.Container(
                                 {
                                     'if': {
                                         'column_id': 'Rating',
-                                        'filter': 'Rating eq "A"'
+                                        'filter_query': '{Rating} eq "A"'
                                     },
                                     'backgroundColor': 'DarkGreen',
                                     'color': 'white',
@@ -333,7 +338,7 @@ body = dbc.Container(
                                 {
                                     'if': {
                                         'column_id': 'Rating',
-                                        'filter': 'Rating eq "A-"'
+                                        'filter_query': '{Rating} eq "A-"'
                                     },
                                     'backgroundColor': 'DarkGreen',
                                     'color': 'white',
@@ -341,7 +346,7 @@ body = dbc.Container(
                                 {
                                     'if': {
                                         'column_id': 'Rating',
-                                        'filter': 'Rating eq "B+"'
+                                        'filter_query': '{Rating} eq "B+"'
                                     },
                                     'backgroundColor': 'LimeGreen',
                                     'color': 'white',
@@ -349,7 +354,7 @@ body = dbc.Container(
                                 {
                                     'if': {
                                         'column_id': 'Rating',
-                                        'filter': 'Rating eq "B"'
+                                        'filter_query': '{Rating} eq "B"'
                                     },
                                     'backgroundColor': 'LimeGreen',
                                     'color': 'white',
@@ -357,7 +362,7 @@ body = dbc.Container(
                                 {
                                     'if': {
                                         'column_id': 'Rating',
-                                        'filter': 'Rating eq "B-"'
+                                        'filter_query': '{Rating} eq "B-"'
                                     },
                                     'backgroundColor': 'LimeGreen',
                                     'color': 'white',
@@ -365,7 +370,7 @@ body = dbc.Container(
                                 {
                                     'if': {
                                         'column_id': 'Rating',
-                                        'filter': 'Rating eq "C+"'
+                                        'filter_query': '{Rating} eq "C+"'
                                     },
                                     'backgroundColor': 'Red',
                                     'color': 'white',
@@ -373,7 +378,7 @@ body = dbc.Container(
                                 {
                                     'if': {
                                         'column_id': 'Rating',
-                                        'filter': 'Rating eq "C"'
+                                        'filter_query': '{Rating} eq "C"'
                                     },
                                     'backgroundColor': 'Red',
                                     'color': 'white',
@@ -381,7 +386,7 @@ body = dbc.Container(
                                 {
                                     'if': {
                                         'column_id': 'Rating',
-                                        'filter': 'Rating eq "C-"'
+                                        'filter_query': '{Rating} eq "C-"'
                                     },
                                     'backgroundColor': 'Red',
                                     'color': 'white',
@@ -389,7 +394,7 @@ body = dbc.Container(
                                 {
                                     'if': {
                                         'column_id': 'Rating',
-                                        'filter': 'Rating eq "D+"'
+                                        'filter_query': '{Rating} eq "D+"'
                                     },
                                     'backgroundColor': 'DarkRed',
                                     'color': 'white',
@@ -397,7 +402,7 @@ body = dbc.Container(
                                 {
                                     'if': {
                                         'column_id': 'Rating',
-                                        'filter': 'Rating eq "D"'
+                                        'filter_query': '{Rating} eq "D"'
                                     },
                                     'backgroundColor': 'DarkRed',
                                     'color': 'white',
@@ -405,7 +410,7 @@ body = dbc.Container(
                                 {
                                     'if': {
                                         'column_id': 'Rating',
-                                        'filter': 'Rating eq "D-"'
+                                        'filter_query': '{Rating} eq "D-"'
                                     },
                                     'backgroundColor': 'DarkRed',
                                     'color': 'white',
@@ -432,15 +437,13 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 app.layout = html.Div(children=[body])
 
-# ---------------
+#############
 # End of html
-# ---------------
+#############
 
-
-
-# ---------------------------------
-# Callbacks
-# ---------------------------------
+########################
+# Beginning of callbacks
+########################
 
 # @app.callback(
 #     Output(component_id='my-div', component_property='children'),
@@ -461,10 +464,13 @@ def on_button_click(n):
 
 # df_funds_small.to_dict("rows")
 
-# ---------------------------------
-# Callbacks
-# ---------------------------------
+##################
+# End of callbacks
+##################
 
+######
+# Main
+######
 if __name__ == '__main__':
     app.run_server(debug=True)
 
